@@ -34,6 +34,6 @@ module.exports = function (grunt) {
                 moduleName: 'momentTests',
                 dest: 'build/tests.js'
             });
-        }).then(done, done);
+        }).then(done);
     });
 };
