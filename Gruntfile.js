@@ -197,7 +197,7 @@ module.exports = function (grunt) {
 
     // test tasks
     grunt.registerTask('test', ['test:node']);
-    grunt.registerTask('test:node', ['rollup-tests', 'qtest']);
+    grunt.registerTask('test:node', ['rollup', 'rollup-tests', 'qtest']);
     // TODO: For some weird reason karma doesn't like the files in
     // build/umd/min/* but works with min/*, so update-index, then git checkout
     grunt.registerTask('test:server', ['rollup-tests', 'update-index', 'karma:server']);

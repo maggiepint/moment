@@ -13,7 +13,8 @@ module.exports = function (grunt) {
         },
         moment: {
             options: {
-                moduleName: 'moment'
+                moduleName: 'moment',
+                exports: 'default'
             },
             files: [{
                 src: 'src/moment.js',
