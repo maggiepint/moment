@@ -24,7 +24,8 @@ module.exports = function (grunt) {
                 ],
             globals: {
                     '../moment': 'moment'
-                }
+                },
+            exports: 'none'
         });
 
         var localeFilesMoment = getLocaleFiles(locales);
@@ -39,19 +40,25 @@ module.exports = function (grunt) {
                     compact: false,
                     presets: ['es2015-loose-rollup']
                 })
-            ]
+            ],
+            exports: 'default'
         });
 
         Promise.all([localeRollup, momentWithLocaleRollup]).then(function (values) {
             var writeLocales = values[0].write({
                 format: 'umd',
+                moduleName: 'locales',
                 dest: 'build/umd/min/locales.custom.js'
             });
             var writeMomentLocales = values[1].write({
                 format: 'umd',
+                moduleName: 'moment',
                 dest: 'build/umd/min/moment-with-locales.custom.js'
             });
-            Promise.all([writeLocales, writeMomentLocales]).then(done, done);
+            Promise.all([writeLocales, writeMomentLocales]).then(done, function(val) {
+                console.log(val);
+                done();
+            });
         }, function (value) {
             console.log(value);
         });
