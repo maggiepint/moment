@@ -7,12 +7,13 @@ module.exports = function (grunt) {
     grunt.task.registerTask('rollup-custom-locales', 'bundle custom locales', function (locales) {
         var done = this.async();
 
-        var localeFiles = getLocaleFiles(locales);
-        console.log(localeFiles);
+        console.log(locales);
+        var localeFiles = (locales) ? getLocaleFiles(locales) :
+            grunt.file.expand({ filter: "isFile", cwd: "src/locale" }, ["*"]).map(function (file) {
+                return 'src/locale/' + file;
+            });
         var localesFile = composeLocaleFile(localeFiles, false);
-        console.log('locales');
         var momentLocalesFile = composeLocaleFile(localeFiles, true);
-        console.log('with moment');
 
         var localeRollup = rollup.rollup({
             entry: localesFile,
@@ -48,12 +49,12 @@ module.exports = function (grunt) {
             var writeLocales = values[0].write({
                 format: 'umd',
                 moduleName: 'locales',
-                dest: 'build/umd/min/locales.custom.js'
+                dest: 'build/umd/min/locales' + (locales) ? '.custom' : '' + '.js'
             });
             var writeMomentLocales = values[1].write({
                 format: 'umd',
                 moduleName: 'moment',
-                dest: 'build/umd/min/moment-with-locales.custom.js'
+                dest: 'build/umd/min/moment-with-locales' + (locales) ? '.custom' : '' + '.js'
             });
             Promise.all([writeMomentLocales]).then(done, function(val) {
                 console.log(val);
@@ -64,7 +65,6 @@ module.exports = function (grunt) {
         });
 
         function getLocaleFiles(locales) {
-            console.log(locales)
             return locales.split(',').map(function (locale) {
                     var file = grunt.file.expand({cwd: 'src'}, 'locale/' + locale + '.js');
                     if (file.length !== 1) {
@@ -78,7 +78,6 @@ module.exports = function (grunt) {
         }
 
         function composeLocaleFile(files, withMoment) {
-            console.log(files)
             var importCode = files.map(function (file) {
                     var identifier = path.basename(file, '.js').replace('-', '_');
                    // var fileNoExt = file.replace('.js', '');
