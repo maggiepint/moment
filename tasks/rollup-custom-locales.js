@@ -8,33 +8,33 @@ module.exports = function (grunt) {
         var done = this.async();
 
         var localeFiles = getLocaleFiles(locales);
+        console.log(localeFiles);
+        var localesFile = composeLocaleFile(localeFiles, false);
+        console.log('locales');
+        var momentLocalesFile = composeLocaleFile(localeFiles, true);
+        console.log('with moment');
 
         var localeRollup = rollup.rollup({
-            entry: localeFiles,
+            entry: localesFile,
             plugins: [
-                multiEntry(),
                 babelPlugin({
                     babelrc: false,
                     compact: false,
                     presets: ['es2015-loose-rollup']
                 })
             ],
+            exports: 'none',
             external: [
-                    path.resolve(__dirname, '../src/moment.js')
-                ],
+                path.resolve(__dirname, '../src/moment.js')
+            ],
             globals: {
-                    '../moment': 'moment'
-                },
-            exports: 'none'
+                '../moment': 'moment'
+            }
         });
 
-        var localeFilesMoment = getLocaleFiles(locales);
-
-        localeFilesMoment.push('src/moment.js');
         var momentWithLocaleRollup = rollup.rollup({
-            entry: localeFilesMoment,
+            entry: momentLocalesFile,
             plugins: [
-                multiEntry(),
                 babelPlugin({
                     babelrc: false,
                     compact: false,
@@ -44,7 +44,7 @@ module.exports = function (grunt) {
             exports: 'default'
         });
 
-        Promise.all([localeRollup, momentWithLocaleRollup]).then(function (values) {
+        Promise.all([ localeRollup, momentWithLocaleRollup]).then(function (values) {
             var writeLocales = values[0].write({
                 format: 'umd',
                 moduleName: 'locales',
@@ -55,7 +55,7 @@ module.exports = function (grunt) {
                 moduleName: 'moment',
                 dest: 'build/umd/min/moment-with-locales.custom.js'
             });
-            Promise.all([writeLocales, writeMomentLocales]).then(done, function(val) {
+            Promise.all([writeMomentLocales]).then(done, function(val) {
                 console.log(val);
                 done();
             });
@@ -64,6 +64,7 @@ module.exports = function (grunt) {
         });
 
         function getLocaleFiles(locales) {
+            console.log(locales)
             return locales.split(',').map(function (locale) {
                     var file = grunt.file.expand({cwd: 'src'}, 'locale/' + locale + '.js');
                     if (file.length !== 1) {
@@ -74,6 +75,20 @@ module.exports = function (grunt) {
                         return 'src/' + file[0];
                     }
                 });
+        }
+
+        function composeLocaleFile(files, withMoment) {
+            console.log(files)
+            var importCode = files.map(function (file) {
+                    var identifier = path.basename(file, '.js').replace('-', '_');
+                   // var fileNoExt = file.replace('.js', '');
+                    return 'import ' + identifier + ' from "../../' + file + '";';
+                }).join('\n'),
+                code = (withMoment) ? 'import moment from "../../src/moment.js";\n\n' +
+                    importCode : importCode,
+                filePath = (withMoment) ? 'build/temp/moment-with-locales.custom.js' : 'build/temp/locales.custom.js'
+            grunt.file.write(filePath, code);
+            return filePath;
         }
     });
 };
