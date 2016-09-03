@@ -27,7 +27,7 @@ var translator = {
     }
 };
 
-export default moment.defineLocale('sr-cyrl', {
+moment.defineLocale('sr-cyrl', {
     months: 'јануар_фебруар_март_април_мај_јун_јул_август_септембар_октобар_новембар_децембар'.split('_'),
     monthsShort: 'јан._феб._мар._апр._мај_јун_јул_авг._сеп._окт._нов._дец.'.split('_'),
     monthsParseExact: true,
